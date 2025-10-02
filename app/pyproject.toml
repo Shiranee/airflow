@@ -1,0 +1,26 @@
+[project]
+name = "airflow-project"
+version = "0.1.0"
+description = "Airflow project with Django-like structure"
+requires-python = ">=3.8"
+dependencies = [
+    "apache-airflow[celery,redis,postgres]==2.8.0",
+    "celery==5.3.4",
+    "redis==5.0.1",
+    "psycopg2-binary==2.9.7",
+    "python-dotenv==1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest==7.4.0",
+    "black==23.9.0",
+    "flake8==6.0.0",
+]
+
+[tool.uv.sources]
+app = { path = "app" }
