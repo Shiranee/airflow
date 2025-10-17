@@ -1,0 +1,68 @@
+x-common: &common
+  env_file:
+    - .env
+  networks:
+    - live-dw
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: .develop/Dockerfile
+      args:
+        - DEV=true
+    volumes:
+      - ./:/srv/app
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    <<: *common
+    restart: unless-stopped
+
+  airflow:
+    build: 
+      context: .
+      dockerfile: .develop/airflow/Dockerfile
+    ports:
+      - "8080:8080"
+    <<: *common
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - .develop/config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./app/staticfiles:/srv/app/app/staticfiles:ro
+    depends_on:
+      - app
+    <<: *common
+
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - live-dw
+    environment:
+      - POSTGRES_DB=devdb
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=changeme
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6370:6370"
+    volumes:
+      - redis-data:/data
+    <<: *common
+
+networks:
+  live-dw:
+    external: true
+
+volumes:
+  dev-db-data:
+  redis-data:

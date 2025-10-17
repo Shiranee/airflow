@@ -1,0 +1,31 @@
+x-common: &common
+  env_file:
+    - .env
+  networks:
+    - storage-network
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: .deploy/Dockerfile
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    <<: *common
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - .deploy/config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./app/staticfiles:/srv/app/app/staticfiles:ro
+    depends_on:
+      - app
+    <<: *common
+
+networks:
+  storage-network:
+    external: true
